@@ -1,0 +1,16 @@
+[settings]
+NSTEPS = 150000
+NSTEPS_BURN = 5000
+G = 0.3
+OMEGA = 1.0
+TIME = 50.0
+INTERACTIVE = False
+
+[path_plot]
+PLOT_FOLDER = ./plot
+PHONONS = ${PLOT_FOLDER}/phonons_distribution_g_${settings:G}_omega_${settings:OMEGA}_time_${settings:TIME}_nsteps_${settings:NSTEPS}_nsteps_burn_${settings:NSTEPS_BURN}.png
+
+[path_data]
+DATA_FOLDER = ./data
+ENERGY+PHONONS = ${DATA_FOLDER}/energy_phonons.txt
+APPEND = False
