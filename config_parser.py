@@ -49,21 +49,33 @@ class Config:
                 'APPEND' : self.config.getboolean('path_data', 'APPEND')}
 
 def check_positive_parameters(settings):
-    """This function checks that the relevant parameters for the simulation hold positive values
-        otherwise we would have a meaningless physical picture and without any steps the
-        simulation would not take place
+    """This function checks that the relevant parameters for the simulation are positive.
+       
+       It collects all the strings relative to invalid parameters that would lead to a
+       nonsensical simulation if presents and raise a ValueError stating all the invalid ones.
     
         Parameters:
-            settings: vocabulary with the relevant parameters for the simulation
+            settings: dictionary that contains relevant parameters for the simulation
+        
+        Raises:
+            ValueError: if any of the following conditions are met:
+                - NSTEPS : not greater than 0
+                - OMEGA (phonon frequency) : not greater than 0.0
+                - G (intensity e-ph coupling) : not greater than 0.0
+                - TIME (lifetime of the electron) : not greater than 0.0
     """
+    invalid_parameters = []
     if settings['NSTEPS'] <= 0:
-        raise ValueError(f'The number of MonteCarlo steps must be > 0 but is {settings["""NSTEPS"""]}')
-    elif settings['OMEGA'] <= 0.0:
-        raise ValueError(f'The phonon frequency must be > 0.0 but is {settings["""OMEGA"""]}')
-    elif settings['G'] <= 0.0:
-        raise ValueError(f'The intensity of electron phonon coupling must be > 0.0 but is {settings["""G"""]}')
-    elif settings['TIME'] <= 0.0:
-        raise ValueError(f'The lifetime of the electron must be > 0.0 but is {settings["""TIME"""]}')
+        invalid_parameters.append(f'The number of MonteCarlo steps must be > 0 but is {settings["""NSTEPS"""]}')
+    if settings['OMEGA'] <= 0.0:
+        invalid_parameters.append(f'The phonon frequency must be > 0.0 but is {settings["""OMEGA"""]}')
+    if settings['G'] <= 0.0:
+        invalid_parameters.append(f'The intensity of electron phonon coupling must be > 0.0 but is {settings["""G"""]}')
+    if settings['TIME'] <= 0.0:
+        invalid_parameters.append(f'The lifetime of the electron must be > 0.0 but is {settings["""TIME"""]}')
+    
+    if invalid_parameters:
+        raise ValueError('\n'.join(invalid_parameters))
 
 def check_storage_directories_exist(path_plot, path_data):
     """This function checks that the destination path to store plot and data
