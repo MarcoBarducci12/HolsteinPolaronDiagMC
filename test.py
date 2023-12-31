@@ -1,5 +1,8 @@
 import pytest
+import numpy as np
+from unittest.mock import Mock
 from os import path
+from polaron import Polaron
 from configparser import ConfigParser
 from config_parser import (check_positive_parameters, 
                         check_storage_directories_exist, 
@@ -12,7 +15,8 @@ def test_config_initialization():
     GIVEN: the name of the configuration file
     WHEN: call the constructor of Config class
     THEN: the resulting config object should be of type
-            ConfigParser"""
+            ConfigParser
+    """
     
     config = Config('configuration.txt')
     assert isinstance(config.config, ConfigParser)
@@ -83,4 +87,64 @@ def test_check_storage_directories_exist(tmp_path):
 
     assert path.exists(path_plot['PLOT_FOLDER'])
     assert path.exists(path_data['DATA_FOLDER'])
+
+"""------------HERE START TESTS FOR POLARON CLASS---------------"""
+
+@pytest.fixture
+def polaron():
+    """This method return a fixed polaron object
+    that can be used consistently during the tests
+    """
+    return Polaron(omega=1.0, g=0.5, time=10.0)
+
+@pytest.fixture
+def phonon():
+    """This method return a np.array of two times
+    that can be used consistently as a phonon during
+    the tests
+    """
+    return np.array([0.2,0.5])
+
+def test_polaron_initialization(polaron):
+    """This test checks that the attribute of the Polaron
+    class are initialized correctly
+    
+    GIVEN: polaron object
+    WHAT: check the attributes are initialized accordingly 
+        to the given parameters
+    THEN: get a valid polaron object
+    """
+    assert polaron.diagram['omega'] == 1.0
+    assert polaron.diagram['g'] == 0.5
+    assert polaron.diagram['time'] == 10.0
+    assert polaron.diagram['order'] == 0
+    assert polaron.diagram['total_energy'] == 0.0
+    assert polaron.phonon_list == []
+    assert polaron.order_sequence == []
+    assert polaron.energy_sequence == []
+
+def test_metropolis(polaron):
+    """This test checks that Metropolis returns the correct values
+    accordingly to the given acceptance probabilities
+    
+    GIVEN: a ratio between acceptance probabilities
+    WHAT: apply metropolis function
+    THEN: get 1.0 if the ratio > 1.0 or the value if it is < 1.0
+    """
+    assert polaron.metropolis(0.7) == 0.7
+    assert polaron.metropolis(1.2) == 1.0
+
+def test_add_phonon_scaling(polaron):
+    """This test checks that a correct factor due to imaginary
+    scaled times is put in front of the ratio between the weight
+    of the diagrams
+
+    GIVEN: a polaron object with specific parameters
+    WHAT: apply add_phonon_scaling factor
+    THEN: the scaling factor has to be equal to the one
+        evaluated manually with the analytic formula
+    """
+    scaling_factor = polaron.add_phonon_scaling()
+    assert scaling_factor == (0.5 * 10.0) ** 2
+
 
