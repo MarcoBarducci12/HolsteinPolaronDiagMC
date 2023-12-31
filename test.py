@@ -147,4 +147,108 @@ def test_add_phonon_scaling(polaron):
     scaling_factor = polaron.add_phonon_scaling()
     assert scaling_factor == (0.5 * 10.0) ** 2
 
+def test_weigth_ratio_add(polaron, phonon):
+    """This test checks whether the ratio between a diagram
+    with one more phonon and the current one has the expected value
+    
+    GIVEN: a polaron object with specific parameters
+        and a phonon with specific times
+    WHAT: apply the weight_ratio_add to evaluate the ratio
+    THEN: the ratio has to be equal to the expected ratio 
+        evaluated through the formula
+    """
+    ratio = polaron.weigth_ratio_add(phonon)
+    expected_ratio = (0.5 * 10.0) ** 2 * np.exp(-10.0 * 1.0 * (0.5 - 0.2))
+    assert ratio == expected_ratio
+    
+def test_proposal_add_ratio_zero_order(polaron,phonon):
+    """This test checks whether the ratio between the proposal
+    probabilities of the reverse and direct process for the 
+    add_phonon update has the expected value
+    
+    GIVEN: a polaron object with specific parameters
+        and a phonon with specific times
+    WHAT: apply the function proposal_add_ratio to evaluate 
+        the ratio
+    THEN: the ratio has to be equal to the expected ratio 
+        evaluated through the formula
 
+    Notes:
+        This test refers to the fixture polaron with 
+        a zero order diagram
+    """
+    ratio = polaron.proposal_add_ratio(phonon)
+    assert polaron.diagram['order'] == 0
+    expected_ratio = 0.5 * (1 - 0.2 )/(0 + 1)
+    assert ratio == expected_ratio
+
+def test_add_internal_zero_order(polaron, phonon):
+    """This test checks that the add_internal method
+    adds a phonon to the phonon_list and updates the order
+    
+    GIVEN: a polaron object with specific parameters
+        and a phonon with specific times
+    WHAT: apply the function add_internal to add a phonon
+        to the phonon list and update the order 
+    THEN: the phonon_list should have a phonon and the order
+        of the diagram should be increased by 2
+
+    Notes:
+        This test refers to the fixture polaron with 
+        a zero order diagram
+    """
+    assert polaron.phonon_list == []
+    polaron.add_internal(phonon)
+    expected_phonon_list=[np.array([0.2,0.5])]
+    assert all(np.array_equal(actual,expected) for actual,expected in 
+                              zip(polaron.phonon_list,expected_phonon_list))
+    assert polaron.diagram['order'] == 2
+
+@pytest.mark.parametrize("parameters", [
+    {'t_gen': 0.3, 't_rem': 0.5, 'expected_acceptance': 1.0},
+    {'t_gen': 0.6, 't_rem': 0.8, 'expected_acceptance': 0.68, 'sampled_acceptance' : 0.5},
+    {'t_gen': 0.6, 't_rem': 0.8, 'expected_acceptance': 0.68, 'sampled_acceptance' : 0.8},
+])
+def test_eval_add_internal(polaron, monkeypatch, parameters):
+    """This test checks the behaviour of the eval_add_internal method.
+     
+    It is responsible for evaluating the acceptance probability for the
+    introduction of a phonon and eventually adding it to the current 
+    diagram depending on the outcome of Metropolis-Hastings.
+
+    The test involves patching the random number generation to control 
+    the random values used in the evaluation. The method is expected 
+    to add a phonon to the phonon_list and update the order of the diagram
+    based on the Metropolis-Hastings acceptance criterion.
+
+    Parameters:
+        polaron: A Polaron instance with a specific configuration.
+        monkeypatch: A pytest fixture that allows modifying or mocking modules during testing.
+        parameters: A list of dictionaries with the patched random values
+              and the expected acceptance
+    """
+    # Get the initial state
+    initial_phonon_list_length = len(polaron.phonon_list)
+    initial_order = polaron.diagram['order']
+
+    if parameters['expected_acceptance'] == 1.0:
+        # Patch the random.uniform function to control its output
+        mock_values = Mock(side_effect=[parameters['t_gen'], 
+                            parameters['t_rem']])
+        monkeypatch.setattr(np.random, 'uniform', mock_values)
+        # Call the method under test
+        polaron.eval_add_internal()
+        assert len(polaron.phonon_list) == initial_phonon_list_length + 1
+        assert polaron.diagram['order'] == initial_order + 2
+
+    elif parameters['expected_acceptance'] < 1.0:
+        mock_values = Mock(side_effect=[parameters['t_gen'], 
+                            parameters['t_rem'], parameters['sampled_acceptance']])
+        monkeypatch.setattr(np.random, 'uniform', mock_values)
+        polaron.eval_add_internal()
+        if parameters['sampled_acceptance'] < parameters['expected_acceptance']:
+            assert len(polaron.phonon_list) == initial_phonon_list_length + 1
+            assert polaron.diagram['order'] == initial_order + 2
+        else:
+            assert len(polaron.phonon_list) == initial_phonon_list_length
+            assert polaron.diagram['order'] == initial_order
