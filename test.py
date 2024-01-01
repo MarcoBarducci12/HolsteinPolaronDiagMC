@@ -204,6 +204,77 @@ def test_add_internal_zero_order(polaron, phonon):
                               zip(polaron.phonon_list,expected_phonon_list))
     assert polaron.diagram['order'] == 2
 
+@pytest.fixture
+def polaron_order_two():
+    """This method return a fixed polaron object
+    with a phonon that can be used consistently
+    during the tests
+    """
+    polaron = Polaron(omega=1.0, g=0.5, time=10.0)
+    phonon = np.array([0.2,0.4])
+    polaron.add_internal(phonon)
+    return polaron
+
+@pytest.fixture
+def another_phonon():
+    """This method return a np.array of two times
+    that can be used consistently as a phonon during
+    the tests
+    """
+    return np.array([0.4,0.8])
+
+@pytest.mark.parametrize("polarons", ["polaron", "polaron_order_two"])
+def test_proposal_add_ratio(polarons, another_phonon, request):
+    """This test checks whether the ratio between the proposal
+    probabilities of the reverse and direct process for the 
+    add_phonon update has the expected value
+    
+    GIVEN: a polaron object with specific parameters
+        and a phonon with specific times
+    WHAT: apply the function proposal_add_ratio to evaluate 
+        the ratio
+    THEN: the ratio has to be equal to the expected ratio 
+        evaluated through the formula
+    """
+    polaron = request.getfixturevalue(polarons)
+    ratio = polaron.proposal_add_ratio(another_phonon)
+    if polaron.diagram['order'] == 0:
+        expected_ratio = 0.5 * (1 - 0.4)/(0 + 1)
+    else:
+        expected_ratio = (1 - 0.4 )/(len(polaron.phonon_list) + 1)
+    assert ratio == expected_ratio
+
+@pytest.mark.parametrize("polarons", ["polaron", "polaron_order_two"])
+def test_add_internal(polarons, another_phonon, request):
+    """This test checks that the add_internal method
+    adds a phonon to the phonon_list and updates the order
+    
+    GIVEN: a polaron object with specific parameters
+        and a phonon with specific times
+    WHAT: apply the function add_internal to add a phonon
+        to the phonon list and update the order 
+    THEN: the phonon_list should have a phonon and the order
+        of the diagram should be increased by 2
+    """
+    polaron = request.getfixturevalue(polarons)
+    #store initial parameters
+    initial_phonon_list_length = len(polaron.phonon_list)
+    initial_diagram_order = polaron.diagram['order']
+    #store initial phonon list
+    initial_phonon_list = polaron.phonon_list[:]
+
+    #call to the function
+    polaron.add_internal(another_phonon)
+
+    #check diagram order and lenght of phonon list is updated correctly
+    assert len(polaron.phonon_list) == initial_phonon_list_length + 1
+    assert polaron.diagram['order'] == initial_diagram_order + 2
+    #check lists are equal phonon by phonon
+    expected_phonon_list=initial_phonon_list + [np.array([0.4,0.8])]
+    assert all(np.array_equal(actual,expected) for actual,expected in 
+                              zip(polaron.phonon_list, expected_phonon_list))
+
+
 @pytest.mark.parametrize("parameters", [
     {'t_gen': 0.3, 't_rem': 0.5, 'expected_acceptance': 1.0},
     {'t_gen': 0.6, 't_rem': 0.8, 'expected_acceptance': 0.68, 'sampled_acceptance' : 0.5},
