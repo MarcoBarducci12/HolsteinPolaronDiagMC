@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from os import path
 from polaron import Polaron
 from configparser import ConfigParser
@@ -199,19 +199,18 @@ def test_add_internal_zero_order(polaron, phonon):
     """
     assert polaron.phonon_list == []
     polaron.add_internal(phonon)
-    expected_phonon_list=[np.array([0.2,0.5])]
+    expected_phonon_list=[phonon]
     assert all(np.array_equal(actual,expected) for actual,expected in 
                               zip(polaron.phonon_list,expected_phonon_list))
     assert polaron.diagram['order'] == 2
 
 @pytest.fixture
-def polaron_order_two():
+def polaron_order_two(phonon):
     """This method return a fixed polaron object
     with a phonon that can be used consistently
     during the tests
     """
     polaron = Polaron(omega=1.0, g=0.5, time=10.0)
-    phonon = np.array([0.2,0.4])
     polaron.add_internal(phonon)
     return polaron
 
@@ -221,7 +220,7 @@ def another_phonon():
     that can be used consistently as a phonon during
     the tests
     """
-    return np.array([0.4,0.8])
+    return np.array([0.6,0.7])
 
 @pytest.mark.parametrize("polarons", ["polaron", "polaron_order_two"])
 def test_proposal_add_ratio(polarons, another_phonon, request):
@@ -239,9 +238,9 @@ def test_proposal_add_ratio(polarons, another_phonon, request):
     polaron = request.getfixturevalue(polarons)
     ratio = polaron.proposal_add_ratio(another_phonon)
     if polaron.diagram['order'] == 0:
-        expected_ratio = 0.5 * (1 - 0.4)/(0 + 1)
+        expected_ratio = 0.5 * (1 - 0.6)/(0 + 1)
     else:
-        expected_ratio = (1 - 0.4 )/(len(polaron.phonon_list) + 1)
+        expected_ratio = (1 - 0.6)/(len(polaron.phonon_list) + 1)
     assert ratio == expected_ratio
 
 @pytest.mark.parametrize("polarons", ["polaron", "polaron_order_two"])
@@ -270,7 +269,7 @@ def test_add_internal(polarons, another_phonon, request):
     assert len(polaron.phonon_list) == initial_phonon_list_length + 1
     assert polaron.diagram['order'] == initial_diagram_order + 2
     #check lists are equal phonon by phonon
-    expected_phonon_list=initial_phonon_list + [np.array([0.4,0.8])]
+    expected_phonon_list=initial_phonon_list + [another_phonon]
     assert all(np.array_equal(actual,expected) for actual,expected in 
                               zip(polaron.phonon_list, expected_phonon_list))
 
@@ -326,16 +325,14 @@ def test_eval_add_internal(polaron, parameters):
             assert polaron.diagram['order'] == initial_order
 
 @pytest.fixture
-def polaron_order_four():
+def polaron_order_four(phonon, another_phonon):
     """This method return a fixed polaron object
     with two phonons that can be used consistently
     during the tests
     """
     polaron = Polaron(omega=1.0, g=0.5, time=10.0)
-    phonon_1 = np.array([0.2,0.5])
-    polaron.add_internal(phonon_1)
-    phonon_2 = np.array([0.4,0.8])
-    polaron.add_internal(phonon_2)
+    polaron.add_internal(phonon)
+    polaron.add_internal(another_phonon)
     return polaron
 
 def test_weigth_ratio_remove(polaron_order_two, phonon):
@@ -432,9 +429,9 @@ def test_remove_internal(parameters, request):
                               zip(polaron.phonon_list, expected_phonon_list))
 
 @pytest.mark.parametrize("parameters", [
-    {'polaron': "polaron_order_four", 'phonon_index' : 0, 'expected_acceptance': 1.0},
-    {'polaron': "polaron_order_two", 'phonon_index' : 0, 'expected_acceptance': 0.64, 'sampled_acceptance' : 0.4},
-    {'polaron': "polaron_order_two", 'phonon_index' : 0, 'expected_acceptance': 0.64, 'sampled_acceptance' : 0.8},
+    {'polaron': "polaron_order_two", 'phonon_index' : 0, 'expected_acceptance': 1.0},
+    {'polaron': "polaron_order_four", 'phonon_index' : 1, 'expected_acceptance': 0.54, 'sampled_acceptance' : 0.3},
+    {'polaron': "polaron_order_four", 'phonon_index' : 1, 'expected_acceptance': 0.54, 'sampled_acceptance' : 0.7},
 ])
 def test_eval_remove_internal(request, parameters):
     """This test checks the behaviour of the eval_remove_internal method.
@@ -485,3 +482,22 @@ def test_eval_remove_internal(request, parameters):
         else:
             assert len(polaron.phonon_list) == initial_phonon_list_length
             assert polaron.diagram['order'] == initial_order
+
+@pytest.mark.parametrize("polarons", 
+            ["polaron", "polaron_order_two"])
+def test_eval_diagram_energy(polarons, request):
+        """Evaluate energy of the system at a MonteCarlo step using the formula of the 
+        estimator
+        """
+        polaron = request.getfixturevalue(polarons)
+
+        if polaron.diagram['order'] == 0:
+            polaron.eval_diagram_energy()
+            assert polaron.diagram['total_energy'] == 0.0
+        elif polaron.diagram['order'] > 0:
+            assert polaron.diagram['order'] == 2
+            phonons_interaction_time_sum = 0.5 - 0.2
+            actual_energy = 1.0 * phonons_interaction_time_sum - 2 / 10.0
+            #calls to the function eval_diagram_energy
+            polaron.eval_diagram_energy()
+            assert polaron.diagram['total_energy'] == actual_energy
