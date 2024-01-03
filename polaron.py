@@ -328,15 +328,6 @@ class Polaron:
             self.diagram['total_energy'] = self.diagram['omega'] * phonons_interaction_time_sum - self.diagram['order']/ \
                                             self.diagram['time']
 
-    def set_starting_info(self):
-        """Fill the lists with diagrams order, energy and lifetime of the electron
-           either with values of the first diagram of zero order or with values
-           of the diagram got after thermalization of the Markov chain
-        """
-        self.order_sequence.append(self.diagram['order'])
-        self.eval_diagram_energy()
-        self.energy_sequence.append(self.diagram['total_energy'])
-
     def update_diagrams_info(self):
         """Update lists of diagrams order, energy and lifetime of the electron"""
         self.order_sequence.append(self.diagram['order'])

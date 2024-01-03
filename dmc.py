@@ -22,7 +22,7 @@ def run_thermalization_steps(polaron : Polaron, nsteps_burn : int) -> Polaron :
     These steps are used to thermalize the Markov chain so the observables
     are not stored 
     """
-    for _ in range(1, nsteps_burn):
+    for _ in range(nsteps_burn):
         if polaron.diagram['order'] == 0:
             polaron.eval_add_internal()
         else:
@@ -45,7 +45,7 @@ def run_diagrammatic_montecarlo(polaron : Polaron, nsteps : int) :
         tuple(list,list) that contains the sequences of orders and energies
         of each diagram sampled in the simulation
     """
-    for _ in range(1, nsteps):
+    for _ in range(nsteps):
         if polaron.diagram['order'] == 0:
             polaron.eval_add_internal()
         else:
