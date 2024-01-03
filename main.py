@@ -55,7 +55,6 @@ if __name__ == "__main__":
         - Lifetime : {polaron.diagram['time']}""" + '\n' +
         "----------------------------------------")
 
-    polaron.set_starting_info()
     print(f'Starting MonteCarlo simulation of {settings["""NSTEPS"""]} steps' + '\n' 
             + "----------------------------------------")
     order_sequence, energy_sequence = run_diagrammatic_montecarlo(polaron, settings['NSTEPS'])
