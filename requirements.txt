@@ -1,0 +1,6 @@
+#you need the following packages to run the program and the tests
+numpy
+matplotlib
+scipy
+pytest
+configparser
