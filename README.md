@@ -80,3 +80,10 @@ it will automatically test all the functions whose name start with _test_.
 1. *test_parser.py* tests the behaviour of the custom parser `Config` and of the helper functions defined in `config_parser.py`.
 2. *test_polaron.py* tests all the functions involved in the process of evaluating and eventually performing one of the two updates `add_internal` and `remove_internal` taking into account the possible outcomes of Metropolis-Hastings criterion based on the value of the acceptance probability for the chosen update.
 3. *test_dmc.py* tests that `run_thermalization_steps` and `run_diagrammatic_montecarlo` performs exactly the number of steps specified in _configuration.txt_ and behaves as expected depending on the conditional statements 
+
+### Examples
+
+The following images can be found in the [examples](https://github.com/MarcoBarducci12/HolsteinPolaronDiagMC/tree/main/examples) folder and show a good agreement between the expected and actual $E_{GS}$ and a good match between the sampled and theoretical phonon distribution
+
+<img src="/examples/phonons_distribution_g_0.3_omega_1.0_time_60.0_nsteps_250000_nsteps_burn_10000.png" width="800">
+<img src="/examples/phonons_distribution_g_1.0_omega_2.0_time_100.0_nsteps_1500000_nsteps_burn_100000.png" width="800">
