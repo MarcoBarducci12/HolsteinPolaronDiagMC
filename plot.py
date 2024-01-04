@@ -72,7 +72,7 @@ def plot_montecarlo(order_sequence : list, energy_sequence : list,
     append_data = path_data['APPEND']
     
     energy_label = r'$E_{GS} =$ ' + f'{mean_energy:.3f}'
-    phonons_label = 'DiagMC: ' + r'$\overline{N_{pho}}/ \tau$ = ' + f'{mean_phonons/time:.4f}'
+    phonons_label = 'DiagMC: ' + r'$\overline{N_{pho}}/\omega\tau$ = ' + f'{mean_phonons/(time*omega):.4f}'
 
     occ, bins, _ = plt.hist(phonons_sequence, density=True, bins=get_bins_edges(phonons_sequence),
         ec='black', fc='blue', alpha=0.8)
@@ -85,9 +85,9 @@ def plot_montecarlo(order_sequence : list, energy_sequence : list,
     plt.ylabel(r'P($N_{phonons}$)')
     
     legend_elements = [Line2D([0], [0], color='b', label=phonons_label),
-                        Line2D([0], [0], color='r', label=r'Poisson fit: ' + r'$\overline{N_{pho}}/ \tau = $ ' + 
-                               '%5.4f' % tuple(par/time)),
-                        Line2D([0], [0], color='y', label=r'Theory: ' + r'$\overline{N_{pho}}/ \tau = $ ' + 
+                        Line2D([0], [0], color='r', label=r'Poisson fit: ' + r'$\overline{N_{pho}}/\omega\tau = $ ' + 
+                               '%5.4f' % tuple(par/(omega*time))),
+                        Line2D([0], [0], color='y', label=r'Theory: ' + r'$N_{pho} = $ ' + 
                                r'$\frac{g^{2}}{\omega^{2}}$ = ' + f'{g**2/omega**2:.4f}'),
                         Line2D([0], [0], color='g', label=energy_label)]
     plt.legend(handles=legend_elements)
