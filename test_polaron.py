@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from unittest.mock import patch
 from polaron import Polaron
+from math import isclose
 
 @pytest.fixture
 def polaron():
@@ -27,11 +28,11 @@ def test_polaron_initialization(polaron):
         to the given parameters
     THEN: get a valid polaron object
     """
-    assert polaron.diagram['omega'] == 1.0
-    assert polaron.diagram['g'] == 0.5
-    assert polaron.diagram['time'] == 10.0
+    assert isclose(polaron.diagram['omega'], 1.0)
+    assert isclose(polaron.diagram['g'], 0.5)
+    assert isclose(polaron.diagram['time'], 10.0)
     assert polaron.diagram['order'] == 0
-    assert polaron.diagram['total_energy'] == 0.0
+    assert isclose(polaron.diagram['total_energy'], 0.0)
     assert polaron.phonon_list == []
     assert polaron.order_sequence == []
     assert polaron.energy_sequence == []
@@ -44,8 +45,8 @@ def test_metropolis(polaron):
     WHAT: apply metropolis function
     THEN: get 1.0 if the ratio > 1.0 or the value if it is < 1.0
     """
-    assert polaron.metropolis(0.7) == 0.7
-    assert polaron.metropolis(1.2) == 1.0
+    assert isclose(polaron.metropolis(0.7), 0.7)
+    assert isclose(polaron.metropolis(1.2), 1.0)
 
 def test_add_phonon_scaling(polaron):
     """This test checks that a correct factor due to imaginary
@@ -58,7 +59,7 @@ def test_add_phonon_scaling(polaron):
         evaluated manually with the analytic formula
     """
     scaling_factor = polaron.add_phonon_scaling()
-    assert scaling_factor == (0.5 * 10.0) ** 2
+    assert isclose(scaling_factor, (0.5 * 10.0) ** 2)
 
 def test_weigth_ratio_add(polaron, phonon):
     """This test checks whether the ratio between a diagram
@@ -72,7 +73,7 @@ def test_weigth_ratio_add(polaron, phonon):
     """
     ratio = polaron.weigth_ratio_add(phonon)
     expected_ratio = (0.5 * 10.0) ** 2 * np.exp(-10.0 * 1.0 * (0.5 - 0.2))
-    assert ratio == expected_ratio
+    assert isclose(ratio,expected_ratio) 
     
 def test_proposal_add_ratio_zero_order(polaron,phonon):
     """This test checks whether the ratio between the proposal
@@ -93,7 +94,7 @@ def test_proposal_add_ratio_zero_order(polaron,phonon):
     ratio = polaron.proposal_add_ratio(phonon)
     assert polaron.diagram['order'] == 0
     expected_ratio = 0.5 * (1 - 0.2 )/(0 + 1)
-    assert ratio == expected_ratio
+    assert isclose(ratio,expected_ratio)
 
 def test_add_internal_zero_order(polaron, phonon):
     """This test checks that the add_internal method
@@ -113,7 +114,7 @@ def test_add_internal_zero_order(polaron, phonon):
     assert polaron.phonon_list == []
     polaron.add_internal(phonon)
     expected_phonon_list=[phonon]
-    assert all(np.array_equal(actual,expected) for actual,expected in 
+    assert all(np.allclose(actual,expected) for actual,expected in 
                               zip(polaron.phonon_list,expected_phonon_list))
     assert polaron.diagram['order'] == 2
 
@@ -154,7 +155,7 @@ def test_proposal_add_ratio(polarons, another_phonon, request):
         expected_ratio = 0.5 * (1 - 0.6)/(0 + 1)
     else:
         expected_ratio = (1 - 0.6)/(len(polaron.phonon_list) + 1)
-    assert ratio == expected_ratio
+    assert isclose(ratio,expected_ratio)
 
 @pytest.mark.parametrize("polarons", ["polaron", "polaron_order_two"])
 def test_add_internal(polarons, another_phonon, request):
@@ -183,7 +184,7 @@ def test_add_internal(polarons, another_phonon, request):
     assert polaron.diagram['order'] == initial_diagram_order + 2
     #check lists are equal phonon by phonon
     expected_phonon_list=initial_phonon_list + [another_phonon]
-    assert all(np.array_equal(actual,expected) for actual,expected in 
+    assert all(np.allclose(actual,expected) for actual,expected in 
                               zip(polaron.phonon_list, expected_phonon_list))
 
 
@@ -213,7 +214,7 @@ def test_eval_add_internal(polaron, parameters):
     initial_phonon_list_length = len(polaron.phonon_list)
     initial_order = polaron.diagram['order']
 
-    if parameters['expected_acceptance'] == 1.0:
+    if isclose(parameters['expected_acceptance'],1.0):
         # Patch the random.uniform function to control its output
         with patch('numpy.random.uniform') as mock_uniform:
             mock_uniform.side_effect = [parameters['t_gen'], 
@@ -260,7 +261,7 @@ def test_weigth_ratio_remove(polaron_order_two, phonon):
     """
     ratio = polaron_order_two.weigth_ratio_remove(phonon)
     expected_ratio =  np.exp(10.0 * 1.0 * (0.5 - 0.2)) / ((0.5 * 10.0) ** 2)
-    assert ratio == expected_ratio
+    assert isclose(ratio,expected_ratio)
 
 @pytest.mark.parametrize("polarons", ["polaron_order_four", 
                                       "polaron_order_two"])
@@ -282,7 +283,7 @@ def test_proposal_remove_ratio(polarons, phonon, request):
         expected_ratio = 2 * 1/(1 - 0.2)
     else:
         expected_ratio = (len(polaron.phonon_list))/(1 - 0.2)
-    assert ratio == expected_ratio
+    assert isclose(ratio,expected_ratio)
 
 @pytest.mark.parametrize("phonon_index", [0,1])
 def test_choose_phonon(polaron_order_four, phonon_index):
@@ -338,7 +339,7 @@ def test_remove_internal(parameters, request):
     assert len(polaron.phonon_list) == initial_phonon_list_length - 1
     assert polaron.diagram['order'] == initial_diagram_order - 2
     #check lists are equal phonon by phonon
-    assert all(np.array_equal(actual,expected) for actual,expected in 
+    assert all(np.allclose(actual,expected) for actual,expected in 
                               zip(polaron.phonon_list, expected_phonon_list))
 
 @pytest.mark.parametrize("parameters", [
@@ -369,7 +370,7 @@ def test_eval_remove_internal(request, parameters):
     initial_phonon_list_length = len(polaron.phonon_list)
     initial_order = polaron.diagram['order']
 
-    if parameters['expected_acceptance'] == 1.0:
+    if isclose(parameters['expected_acceptance'],1.0):
         # Patch the random.uniform function to control its output
         with patch('numpy.random.randint') as mock_randint:
             mock_randint.return_value = parameters['phonon_index']  # Replace with the desired index
@@ -406,14 +407,14 @@ def test_eval_diagram_energy(polarons, request):
 
         if polaron.diagram['order'] == 0:
             polaron.eval_diagram_energy()
-            assert polaron.diagram['total_energy'] == 0.0
+            assert isclose(polaron.diagram['total_energy'],0.0)
         elif polaron.diagram['order'] > 0:
             assert polaron.diagram['order'] == 2
             phonons_interaction_time_sum = 0.5 - 0.2
             actual_energy = 1.0 * phonons_interaction_time_sum - 2 / 10.0
             #calls to the function eval_diagram_energy
             polaron.eval_diagram_energy()
-            assert polaron.diagram['total_energy'] == actual_energy
+            assert isclose(polaron.diagram['total_energy'],actual_energy)
 
 def test_update_diagrams_info(polaron_order_two):
     """This test checks that the lists with diagrams order and energy
@@ -447,4 +448,4 @@ def test_update_diagrams_info(polaron_order_two):
     expected_energy_list = initial_energy_list + [energy]
 
     assert polaron_order_two.order_sequence == expected_order_list  
-    assert polaron_order_two.energy_sequence == expected_energy_list
+    assert np.allclose(polaron_order_two.energy_sequence, expected_energy_list, rtol=1e-9)

@@ -83,7 +83,7 @@ class Polaron:
 
     def __init__(self, omega : float, g : float, time : float):
         """This function builds:
-            - diagram : a vocabulary that stores the features of the Feynman's diagram of a polaron.
+            - diagram : a dictionary that stores the features of the Feynman's diagram of a polaron.
                 It stores both fixed parameters and variables read from a configuration file.
 
             - phonon_list : empty list that is updated at each step to store the phonons 

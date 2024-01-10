@@ -13,11 +13,11 @@ class Config:
         self.config.read(filename)
 
     def get_settings(self):
-        """This function stores in a vocabulary the physical and technical 
+        """This function stores in a dictionary the physical and technical 
         parameters for the simulation
         
         Return:
-            vocabulary with relevant parameters for the simulation
+            dictionary with relevant parameters for the simulation
         """
         return {'NSTEPS' : int(self.config.get('settings', 'NSTEPS')),
                 'NSTEPS_BURN' : int(self.config.get('settings', 'NSTEPS_BURN')),
@@ -27,21 +27,21 @@ class Config:
                 'INTERACTIVE' : self.config.getboolean('settings', 'INTERACTIVE')}
     
     def get_path_plot(self):
-        """This function stores in a vocabulary the path to save plots
+        """This function stores in a dictionary the path to save plots
         
         Return:
-            vocabulary that stores str identifiers and the path to store
+            dictionary that stores str identifiers and the path to store
             the corresponding plot
         """
         return {'PLOT_FOLDER' : self.config.get('path_plot', 'PLOT_FOLDER'),
                 'PHONONS' : self.config.get('path_plot', 'PHONONS')}
     
     def get_path_data(self):
-        """This function stores in a vocabulary the path and features 
+        """This function stores in a dictionary the path and features 
         to save relevant data from the simulation
         
         Return:
-            vocabulary that stores str identifiers path and mode to store
+            dictionary that stores str identifiers path and mode to store
             the corresponding data
         """
         return {'DATA_FOLDER' : self.config.get('path_data', 'DATA_FOLDER'), 
@@ -82,8 +82,8 @@ def check_storage_directories_exist(path_plot, path_data):
         exist otherwise it creates them 
     
         Parameters:
-            path_plot: vocabulary with the path to store plot
-            path_data: vocabulary with the path to store data
+            path_plot: dictionary with the path to store plot
+            path_data: dictionary with the path to store data
     """
     #create path for plot folder
     if not path.exists(path_plot['PLOT_FOLDER']):
