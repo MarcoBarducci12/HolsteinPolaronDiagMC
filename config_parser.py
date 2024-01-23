@@ -26,6 +26,20 @@ class Config:
                 'TIME' : float(self.config.get('settings', 'TIME')),
                 'INTERACTIVE' : self.config.getboolean('settings', 'INTERACTIVE')}
     
+    def get_seed(self) -> dict[str, int | None]:
+        """This function stores in a dictionary the seed of the random
+        number generator used in the simulation.
+        It either stores the value read from the configuration file or None
+        of no value is provided
+        
+        Return:
+            dictionary with the seed for random 
+        """ 
+        if self.config.get('seed', 'SEED') == "" :
+          return {'SEED' : None}
+        else:
+            return {'SEED' : self.config.get('seed', 'SEED')}
+           
     def get_path_plot(self) -> dict[str, str]:
         """This function stores in a dictionary the path to save plots
         

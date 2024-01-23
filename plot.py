@@ -31,7 +31,8 @@ def poisson_func(values : np.ndarray, mean : float) -> np.ndarray:
     return poisson.pmf(values, mean)
 
 def plot_montecarlo(order_sequence : list, energy_sequence : list, 
-                    settings : dict[str, str], path_plot : dict[str, str],
+                    settings : dict[str, int | float | bool],
+                    seed : dict[str, int | None], path_plot : dict[str, str],
                     path_data : dict[str,str]):
     """
     This function:
@@ -69,6 +70,9 @@ def plot_montecarlo(order_sequence : list, energy_sequence : list,
     nsteps = settings['NSTEPS']
     nsteps_burn = settings['NSTEPS_BURN']
     interactive = settings['INTERACTIVE']
+
+    #seed of the random number generator for the simulation
+    seed_val = seed['SEED']
 
     #path plot
     plot_phonons = path_plot['PHONONS']
@@ -112,22 +116,22 @@ def plot_montecarlo(order_sequence : list, energy_sequence : list,
         with open(data_energy_phonons, 'w') as file:
             #column labels for output 
             print('g' + ' ' + 'omega' + ' ' + 'time' + ' ' + 
-                  'nsteps_burn' + ' ' + 'nsteps' + ' ' + 
+                  'nsteps_burn' + ' ' + 'nsteps' + ' ' + 'seed' + ' ' +
                   'mean_phonons_DMC' + ' ' + 'mean_energy_DMC', 
                   file=file)
             #actual values
             print(str(g) + ' ' + str(omega) + ' ' + 
                   str(time) + ' ' + str(nsteps_burn) + ' ' + 
-                  str(nsteps) + ' ' + f'{mean_phonons:.5f}' + ' ' +
-                  f'{mean_energy:.5f}', file=file)
+                  str(nsteps) + ' ' + str(seed_val) + ' ' + f'{mean_phonons:.5f}'
+                  + ' ' + f'{mean_energy:.5f}', file=file)
     else:
         #print actual values
         with open(data_energy_phonons, 'a') as file:
             #actual values
             print(str(g) + ' ' + str(omega) + ' ' + 
                   str(time) + ' ' + str(nsteps_burn) + ' ' + 
-                  str(nsteps) + ' ' + f'{mean_phonons:.5f}' + ' ' +
-                  f'{mean_energy:.5f}', file=file)
+                  str(nsteps) + ' ' + str(seed_val) + ' ' + f'{mean_phonons:.5f}' 
+                  + ' ' + f'{mean_energy:.5f}', file=file)
 
 
 

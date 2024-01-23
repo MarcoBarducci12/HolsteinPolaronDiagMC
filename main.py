@@ -42,8 +42,15 @@ if __name__ == "__main__":
     polaron=Polaron(settings['OMEGA'], settings['G'], 
                     settings['TIME'])
     
-    #setting seed of the random sequence to get reproducibility
-    np.random.seed(1)
+    #setting seed for the rng or use a random one if not provided
+    seed_dict = config.get_seed()
+    if seed_dict['SEED'] == None:
+        np.random.seed()
+        print("Seed not provided: the random number generator will be initialized with a random seed")
+    else:
+        np.random.seed(seed_dict['SEED'])
+        print(f"""Setting seed of random number generator
+               with value{seed_dict['''SEED''']}""")
 
     if settings['NSTEPS_BURN'] > 0:
         print("Starting thermalization of Markov chain" + '\n'
@@ -60,4 +67,4 @@ if __name__ == "__main__":
     order_sequence, energy_sequence = run_diagrammatic_montecarlo(polaron, settings['NSTEPS'])
     print('Simulation ended!')
     plot.plot_montecarlo(order_sequence, energy_sequence, 
-                         settings, path_plot, path_data)
+                         settings, seed_dict, path_plot, path_data)

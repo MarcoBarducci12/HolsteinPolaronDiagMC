@@ -19,8 +19,8 @@ def test_config_initialization():
     config = Config('configuration_mock.txt')
     assert isinstance(config.config, ConfigParser)
 
-def test_config_keys_initialization():
-    """This test checks whether the get_settings, 
+def test_config_keys_values_initialization():
+    """This test checks whether the get_settings, get_seed 
     get_path_plot, get_path_data methods return dictionaries
     with the expected keys and values
      
@@ -31,6 +31,7 @@ def test_config_keys_initialization():
 
     config = Config('configuration_mock.txt')
     settings = config.get_settings()
+    seed_dict = config.get_seed()
     path_plot = config.get_path_plot()
     path_data = config.get_path_data()
 
@@ -40,6 +41,7 @@ def test_config_keys_initialization():
     assert isclose(settings['OMEGA'],1.0)
     assert isclose(settings['TIME'],50.0)
     assert settings['INTERACTIVE'] == False
+    assert seed_dict['SEED'] == None
 
     assert path_plot['PLOT_FOLDER'] == "./plot"
     assert path_plot['PHONONS'] == ("./plot/phonons_distribution_g_0.5"

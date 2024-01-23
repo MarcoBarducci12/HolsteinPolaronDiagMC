@@ -6,6 +6,9 @@ OMEGA = 1.0
 TIME = 50.0
 INTERACTIVE = False
 
+[seed]
+SEED = 1
+
 [path_plot]
 PLOT_FOLDER = ./plot
 PHONONS = ${PLOT_FOLDER}/phonons_distribution_g_${settings:G}_omega_${settings:OMEGA}_time_${settings:TIME}_nsteps_${settings:NSTEPS}_nsteps_burn_${settings:NSTEPS_BURN}.png
