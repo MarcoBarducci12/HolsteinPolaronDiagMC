@@ -77,17 +77,15 @@ def check_positive_parameters(settings):
     if invalid_parameters:
         raise ValueError('\n'.join(invalid_parameters))
 
-def check_storage_directories_exist(path_plot, path_data):
-    """This function checks that the destination path to store plot and data
-        exist otherwise it creates them 
+def ensure_storage_directories_exist(path_plot, path_data):
+    """This function ensures that the target directories to store
+      plot and data exist. It either creates them if they are absent or 
+      leaves the target directories unaltered if already present
     
         Parameters:
             path_plot: dictionary with the path to store plot
             path_data: dictionary with the path to store data
     """
-    #create path for plot folder
-    if not path.exists(path_plot['PLOT_FOLDER']):
-        makedirs(path_plot['PLOT_FOLDER'])
-    if not path.exists(path_data['DATA_FOLDER']):
-        makedirs(path_data['DATA_FOLDER'])
+    makedirs(path_plot['PLOT_FOLDER'], exist_ok=True)
+    makedirs(path_data['DATA_FOLDER'], exist_ok=True)
 

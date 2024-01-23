@@ -36,11 +36,11 @@ if __name__ == "__main__":
     #get path to store data
     path_data = config.get_path_data()
     
-    #check storage directories exist
-    config_parser.check_storage_directories_exist(path_plot,path_data)
+    #ensure storage directories exist
+    config_parser.ensure_storage_directories_exist(path_plot,path_data)
 
     polaron=Polaron(settings['OMEGA'], settings['G'], 
-                    settings['TIME']) # settings['MU'],
+                    settings['TIME'])
     
     #setting seed of the random sequence to get reproducibility
     np.random.seed(1)

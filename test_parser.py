@@ -1,8 +1,9 @@
 import pytest
-from os import path
+from os import path, rmdir
+from math import isclose
 from configparser import ConfigParser
 from config_parser import (check_positive_parameters, 
-                        check_storage_directories_exist, 
+                        ensure_storage_directories_exist, 
                         Config)
 
 def test_config_initialization():
@@ -15,72 +16,74 @@ def test_config_initialization():
             ConfigParser
     """
     
-    config = Config('configuration.txt')
+    config = Config('configuration_mock.txt')
     assert isinstance(config.config, ConfigParser)
 
 def test_config_keys_initialization():
     """This test checks whether the get_settings, 
     get_path_plot, get_path_data methods return dictionaries
-    with the expected keys
+    with the expected keys and values
      
     GIVEN: a valid config object
     WHEN: apply the get_settings(), get_path_plot(), get_data_plot()
-    THEN: the resulting dictionaries contain the expected keys
+    THEN: the resulting dictionaries contain the expected keys and values
     """
 
-    config = Config('configuration.txt')
+    config = Config('configuration_mock.txt')
     settings = config.get_settings()
     path_plot = config.get_path_plot()
     path_data = config.get_path_data()
 
-    assert 'NSTEPS' in settings
-    assert 'NSTEPS_BURN' in settings
-    assert 'G' in settings
-    assert 'OMEGA' in settings
-    assert 'TIME' in settings
-    assert 'INTERACTIVE' in settings
+    assert settings['NSTEPS'] == 100000
+    assert settings['NSTEPS_BURN'] == 1000
+    assert isclose(settings['G'],0.5)
+    assert isclose(settings['OMEGA'],1.0)
+    assert isclose(settings['TIME'],50.0)
+    assert settings['INTERACTIVE'] == False
 
-    assert 'PLOT_FOLDER' in path_plot
-    assert 'PHONONS' in path_plot
+    assert path_plot['PLOT_FOLDER'] == "./plot"
+    assert path_plot['PHONONS'] == ("./plot/phonons_distribution_g_0.5"
+                                    "_omega_1.0_time_50.0_nsteps_100000"
+                                    "_nsteps_burn_1000.png")
 
-    assert 'DATA_FOLDER' in path_data
-    assert 'ENERGY+PHONONS' in path_data
-    assert 'APPEND' in path_data
+    assert path_data['DATA_FOLDER'] == "./data"
+    assert path_data['ENERGY+PHONONS'] == "./data/energy_phonons.txt"
+    assert path_data['APPEND'] == False
 
 def test_check_positive_parameters():
     """This test checks whether the function check_positive_parameters
-      raises a ValueError for invalid settings and does not raise
-      an error for valid settings
+      raises a ValueError for invalid settings
       
-    GIVEN: an invalid (valid) settings of parameters
+    GIVEN: an invalid settings of parameters
     WHAT: apply to it the check_positive_parameters function
-    THEN: it raises (not raises) a ValueError
+    THEN: it raises a ValueError
     """
     
     invalid_settings = {'NSTEPS' : 0, 'OMEGA' : -1.0, 'G' : 1.0, 'TIME' : -10.0}
     with pytest.raises(ValueError):
         check_positive_parameters(invalid_settings)
 
-    valid_settings = {'NSTEPS' : 100, 'OMEGA' : 1.0, 'G' : 1.0, 'TIME' : 10.0}
-    check_positive_parameters(valid_settings)
+def test_ensure_storage_directories_exist():
+    """This test tests the behaviour of ensure_storage_directories_exist
+    function which ensures that the target directories exists either
+    creating them if absents or leaving the directories unaltered
+    if they already exist
 
-def test_check_storage_directories_exist(tmp_path):
-    """This test tests the behaviour of check_storage_directories_exist
-    function which checks whether the provided directories exists and
-    it creates them if they do not exist
-    
-    Parameters:
-        tmp_path : temporary directory path provided by Pytest
-
-    GIVEN: a temporary directory path
-    WHAT: apply to it check_storage_directories_exist function
+    GIVEN: test directories paths
+    WHAT: apply to it ensures_storage_directories_exist function
     THEN: create the directories if they do no exist
     """
 
-    path_plot = {'PLOT_FOLDER': str(tmp_path / 'plot/')}
-    path_data = {'DATA_FOLDER': str(tmp_path / 'data/')}
+    path_plot = {'PLOT_FOLDER': str('mock_plots/')}
+    path_data = {'DATA_FOLDER': str('mock_data/')}
 
-    check_storage_directories_exist(path_plot, path_data)
+    ensure_storage_directories_exist(path_plot, path_data)
 
     assert path.exists(path_plot['PLOT_FOLDER'])
     assert path.exists(path_data['DATA_FOLDER'])
+
+    rmdir(path_plot['PLOT_FOLDER'])
+    rmdir(path_data['DATA_FOLDER'])
+
+    assert not path.exists(path_plot['PLOT_FOLDER'])
+    assert not path.exists(path_data['DATA_FOLDER'])
