@@ -1,5 +1,5 @@
 import configparser
-from os import path, makedirs
+from os import makedirs
 
 class Config:
     def __init__(self, filename : str):
@@ -12,7 +12,7 @@ class Config:
         self.config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
         self.config.read(filename)
 
-    def get_settings(self):
+    def get_settings(self) -> dict[str, int | float | bool]:
         """This function stores in a dictionary the physical and technical 
         parameters for the simulation
         
@@ -26,7 +26,7 @@ class Config:
                 'TIME' : float(self.config.get('settings', 'TIME')),
                 'INTERACTIVE' : self.config.getboolean('settings', 'INTERACTIVE')}
     
-    def get_path_plot(self):
+    def get_path_plot(self) -> dict[str, str]:
         """This function stores in a dictionary the path to save plots
         
         Return:
@@ -36,7 +36,7 @@ class Config:
         return {'PLOT_FOLDER' : self.config.get('path_plot', 'PLOT_FOLDER'),
                 'PHONONS' : self.config.get('path_plot', 'PHONONS')}
     
-    def get_path_data(self):
+    def get_path_data(self) -> dict[str, str | bool]:
         """This function stores in a dictionary the path and features 
         to save relevant data from the simulation
         
@@ -48,7 +48,7 @@ class Config:
                 'ENERGY+PHONONS' : self.config.get('path_data', 'ENERGY+PHONONS'),
                 'APPEND' : self.config.getboolean('path_data', 'APPEND')}
 
-def check_positive_parameters(settings):
+def check_positive_parameters(settings : dict[str, str | bool]):
     """This function checks that the relevant parameters for the simulation are positive.
        
        It collects all the strings relative to invalid parameters that would lead to a
@@ -77,7 +77,8 @@ def check_positive_parameters(settings):
     if invalid_parameters:
         raise ValueError('\n'.join(invalid_parameters))
 
-def ensure_storage_directories_exist(path_plot, path_data):
+def ensure_storage_directories_exist(path_plot : dict[str,str],
+                                      path_data : dict[str,str]):
     """This function ensures that the target directories to store
       plot and data exist. It either creates them if they are absent or 
       leaves the target directories unaltered if already present

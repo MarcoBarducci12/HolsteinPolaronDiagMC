@@ -114,7 +114,7 @@ class Polaron:
         self.energy_sequence = []
  
 
-    def metropolis(self, prob : float):
+    def metropolis(self, prob : float) -> int | float:
         """This function uses the Metropolis choice for the 
             detailed balance of the Markov chain
         
@@ -128,7 +128,7 @@ class Polaron:
         
         return min(1, prob)
 
-    def add_phonon_scaling(self):
+    def add_phonon_scaling(self) -> float :
         """This method evaluate the scaling factor for the value
          of each diagram due to the presence of a phonon coupled to the electron. 
         
@@ -142,7 +142,7 @@ class Polaron:
         return (self.diagram['g']*self.diagram['time'])**2
 
 
-    def weigth_ratio_add(self, phonon : np.ndarray):
+    def weigth_ratio_add(self, phonon : np.ndarray) -> float :
         """This method evaluate the ratio between the proposed diagram with an additional
         phonon and the current one.
 
@@ -161,7 +161,7 @@ class Polaron:
                             (phonon[1] - phonon[0]))
         return self.add_phonon_scaling()*phonon_propagator
 
-    def proposal_add_ratio(self, phonon : np.ndarray):
+    def proposal_add_ratio(self, phonon : np.ndarray) -> float :
         """This method evaluate the ratio between the proposal probability of choosing the reverse
         update (i.e. removing the phonon added) and the current one (i.e. adding the phonon)
 
@@ -199,15 +199,27 @@ class Polaron:
         
     def add_internal(self, phonon : np.ndarray):
         """This method append a phonon to the list of phonons already coupled
-        to the electron and update the order of the diagram"""
+        to the electron and update the order of the diagram
+        
+        Parameters:
+            phonon: array that contains the initial and final time for the interaction
+                line of the proposed phonon
+        """
 
         self.phonon_list.append(phonon)
         self.diagram['order'] += 2
 
     def eval_add_internal(self):
-        """This method evaluates the ratio between acceptance probabilities 
-        used in the Metropolis-Hastings 
-        algorithm and accept or reject the proposed update"""
+        """This method generates a phonon and evaluates the ratio
+        between acceptance probabilities used in Metropolis-Hastings
+        Depending on the outcome the proposed update can be accepted
+        or rejected 
+
+        Notes:
+        If the update is accepted both the state of phonon_list and the
+        order of the diagram change.
+        One more phonon is appended and the order of the diagram increases.
+        """
 
         # generate two random time for the extrema of the phonon interaction line
         t_gen = np.random.uniform(0, 1)
@@ -229,16 +241,19 @@ class Polaron:
             if sample <= acceptance:
                 self.add_internal(phonon)
 
-    def choose_phonon(self) :
-        """This method selects randomly the index of a phonon among the indexes of the phonons in the list 
+    def choose_phonon(self) -> int :
+        """This method selects randomly the index of a phonon among
+        the indexes of the phonons in the list 
 
         Return:
-            phonon_index: randomly chosen index of a phonon among the ones in the list"""
+            phonon_index: randomly chosen index of a phonon among
+                the ones in the list
+        """
         
         phonon_index = np.random.randint(len(self.phonon_list))
         return phonon_index
 
-    def weigth_ratio_remove(self, phonon : np.ndarray):
+    def weigth_ratio_remove(self, phonon : np.ndarray) -> float:
         """This method evaluate the ratio between the proposed diagram with one less phonon
         phonon and the current one 
 
@@ -257,7 +272,7 @@ class Polaron:
                                 (phonon[1] - phonon[0]))
         return phonon_propagator_inverse/self.add_phonon_scaling()
 
-    def proposal_remove_ratio(self, phonon : np.ndarray):
+    def proposal_remove_ratio(self, phonon : np.ndarray) -> float :
         """This method evaluate the ratio between the proposal probability of choosing the reverse
         update (i.e. adding the phonon) and the current one (i.e. removing the chosen phonon)
 
@@ -288,14 +303,32 @@ class Polaron:
         elif self.diagram['order'] != 2 :
             return len(self.phonon_list)/(1-phonon[0])
 
-    def remove_internal(self, phonon_index):
-        """Remove a phonon from the diagram and update the order"""
+    def remove_internal(self, phonon_index : int):
+        """This method remove a phonon from the list of phonons
+        and update the order the diagram
+        
+        Parameters:
+            phonon_index: index in phonon_list corresponding
+                        to the chosen phonon
+        Notes:
+        This method changes the state of the object both decreasing 
+        the order of the diagram and 
+        """
+
         del self.phonon_list[phonon_index]
         self.diagram['order'] -= 2
 
     def eval_remove_internal(self):
-        """This method evaluates the ratio between acceptance probabilities involved in the Metropolis Hastings 
-        algorithm and accept or reject the proposed update"""
+        """This method evaluates the ratio between acceptance probabilities 
+        used in Metropolis-Hastings for the remove_internal update.
+        Depending on its outcome the update can be accepted or rejected.
+
+        Notes:
+        If the update is accepted both the state of phonon_list and the
+        order of the diagram change.
+        One phonon is removed from the list and the order of the diagram
+        decreases.
+        """
 
         #get a phonon randomly from the one coupled to the electron in the current diagram
         phonon_index = self.choose_phonon()
@@ -317,8 +350,8 @@ class Polaron:
                 self.remove_internal(phonon_index)
 
     def eval_diagram_energy(self):
-        """Evaluate energy of the system at a MonteCarlo step using the formula of the 
-        estimator
+        """This method evaluates the energy of the system at a MonteCarlo step
+        using the formula of the estimator and updates the energy of the diagram
         """
         if self.diagram['order'] == 0:
             self.diagram['total_energy'] = 0.0
@@ -329,6 +362,7 @@ class Polaron:
                                             self.diagram['time']
 
     def update_diagrams_info(self):
-        """Update lists of diagrams order, energy and lifetime of the electron"""
+        """This method update the lists of diagrams order and
+        energy of the polaron"""
         self.order_sequence.append(self.diagram['order'])
         self.energy_sequence.append(self.diagram['total_energy'])

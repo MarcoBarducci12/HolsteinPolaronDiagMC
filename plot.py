@@ -5,7 +5,7 @@ from matplotlib.lines import Line2D
 from scipy.optimize import curve_fit
 from scipy.stats import poisson
 
-def get_bins_edges(sequence : np.ndarray):
+def get_bins_edges(sequence : np.ndarray) -> list[float]:
     """This method set the left and right edges for each bin of
     the histogram. The bin is centered on each of the possible integer
     values sampled
@@ -20,9 +20,15 @@ def get_bins_edges(sequence : np.ndarray):
     bins_edges = [i-0.5 for i in range(n_bins+1)]
     return bins_edges
 
-def poisson_func(mean, par):
-    "This function return a poisson variable "
-    return poisson.pmf(mean, par)
+def poisson_func(values : np.ndarray, mean : float) -> np.ndarray:
+    """This function returns the probability mass function
+    of a poisson function
+    
+    Parameters:
+        values: domain values where the poissonian is evaluated
+        mean: mean value of expected events for the distribution
+    """
+    return poisson.pmf(values, mean)
 
 def plot_montecarlo(order_sequence : list, energy_sequence : list, 
                     settings : dict[str, str], path_plot : dict[str, str],
