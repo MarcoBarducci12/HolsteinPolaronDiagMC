@@ -37,7 +37,12 @@ The `[settings]` section contains some physical and technical parameters such as
 - NSTEPS: number of Monte Carlo steps
 - NSTEPS_BURN: number of steps for thermalization
 
-and others. Instead the `[path_plot]` and `[path_data]` sections contain informations about the path name where plots and data are saved.
+and others.
+
+The `[seed]` section contains the SEED parameter for the random number generators.
+If the key is left empty the initialization occurs with a random value.
+
+Instead the `[path_plot]` and `[path_data]` sections contain informations about the path name where plots and data are saved.
 
 
 ### Structure of the project
@@ -81,8 +86,10 @@ To test the program in your environment execute
 ```pytest .```
 it will automatically test all the functions whose name start with _test_. 
 1. *test_parser.py* tests the behaviour of the custom parser `Config` and of the helper functions defined in `config_parser.py`.
+The tests are executed reading values from _configuration\_test.txt_ a configuration file suitable for testing that imitates the user one.
 2. *test_polaron.py* tests all the functions involved in the process of evaluating and eventually performing one of the two updates `add_internal` and `remove_internal` taking into account the possible outcomes of Metropolis-Hastings criterion based on the value of the acceptance probability for the chosen update.
-3. *test_dmc.py* tests that `run_thermalization_steps` and `run_diagrammatic_montecarlo` performs exactly the number of steps specified in _configuration.txt_ and behaves as expected depending on the conditional statements 
+3. *test_dmc.py* tests that `run_thermalization_steps` and `run_diagrammatic_montecarlo` returns respectively a valid Polaron object
+and the two lists `order_sequence` and `energy_sequence` with lengths equal to the number of steps specified in _configuration.txt_.
 
 ### Examples
 

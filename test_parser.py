@@ -16,7 +16,7 @@ def test_config_initialization():
             ConfigParser
     """
     
-    config = Config('configuration_mock.txt')
+    config = Config('configuration_test.txt')
     assert isinstance(config.config, ConfigParser)
 
 def test_config_keys_values_initialization():
@@ -29,7 +29,7 @@ def test_config_keys_values_initialization():
     THEN: the resulting dictionaries contain the expected keys and values
     """
 
-    config = Config('configuration_mock.txt')
+    config = Config('configuration_test.txt')
     settings = config.get_settings()
     seed_dict = config.get_seed()
     path_plot = config.get_path_plot()
@@ -76,14 +76,15 @@ def test_ensure_storage_directories_exist():
     THEN: create the directories if they do no exist
     """
 
-    path_plot = {'PLOT_FOLDER': str('mock_plots/')}
-    path_data = {'DATA_FOLDER': str('mock_data/')}
+    path_plot = {'PLOT_FOLDER': str('test_plots/')}
+    path_data = {'DATA_FOLDER': str('test_data/')}
 
     ensure_storage_directories_exist(path_plot, path_data)
 
     assert path.exists(path_plot['PLOT_FOLDER'])
     assert path.exists(path_data['DATA_FOLDER'])
 
+    #clear the directories to leave the working tree as it was before this test
     rmdir(path_plot['PLOT_FOLDER'])
     rmdir(path_data['DATA_FOLDER'])
 
